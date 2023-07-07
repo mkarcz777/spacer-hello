@@ -10,7 +10,17 @@
         <SearchInputComponent v-model="searchValue" @input="handleInput" :dark="step === 1" />
         <!-- v-model="x" zawiera w sobie zapis :value="x" stad mamy value w propsach komponentu -->
         <div class="results" v-if="results && !loading && step === 1">
-          <ItemComponent v-for="item in results" v-bind:key="item.data[0].nasa_id" :item="item" />
+          <ItemComponent v-for="item in results" v-bind:key="item.data[0].nasa_id" :item="item"
+            @click.native="handleModalOpen(item)" />
+        </div>
+        <ModalComponent v-if="modalOpen" :item="modalItem" @closeModal="modalOpen = false" />
+        <div class="loader" v-if="step === 1 && loading">
+          <div>
+          </div>
+          <div>
+          </div>
+          <div>
+          </div>
         </div>
     </div>
 </template>
@@ -23,6 +33,7 @@ import ClaimComponent from '@/components/ClaimComponent.vue';
 import SearchInputComponent from '@/components/SearchInputComponent.vue';
 import HeroImageComponent from '@/components/HeroImageComponent.vue';
 import ItemComponent from '@/components/ItemComponent.vue';
+import ModalComponent from './components/ModalComponent.vue';
 
 const API = 'https://images-api.nasa.gov/search';
 
@@ -33,9 +44,12 @@ export default {
     SearchInputComponent,
     HeroImageComponent,
     ItemComponent,
+    ModalComponent,
   },
   data() {
     return {
+      modalOpen: false,
+      modalItem: null,
       loading: false,
       step: 0,
       searchValue: '',
@@ -44,6 +58,10 @@ export default {
   },
   methods: {
     /* eslint-disable */
+    handleModalOpen(item) {
+      this.modalOpen = true;
+      this.modalItem = item;
+    },
     handleInput: debounce(function () {
       this.loading = true;
       axios.get(`${API}?q=${this.searchValue}&media_type=image`)
@@ -111,5 +129,46 @@ export default {
       grid-template-columns: 1fr 1fr 1fr;
     }  
   }
+  .loader {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-top: 100px;
 
+  @media (min-width: 769px) {
+    width: 100px;
+    height: 100px;
+  }
+  }
+  .loader div {
+    display: inline-block;
+    position: absolute;
+    left: 8px;
+    width: 16px;
+    background: #1e3d4a;
+    animation: loader 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+  }
+  .loader div:nth-child(1) {
+    left: 8px;
+    animation-delay: -0.24s;
+  }
+  .loader div:nth-child(2) {
+    left: 32px;
+    animation-delay: -0.12s;
+  }
+  .loader div:nth-child(3) {
+    left: 56px;
+    animation-delay: 0;
+  }
+  @keyframes loader {
+    0% {
+      top: 8px;
+      height: 64px;
+    }
+    50%, 100% {
+      top: 24px;
+      height: 32px;
+    }
+  }
 </style>
